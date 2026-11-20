@@ -52,12 +52,24 @@ class Config:
 
 def load_config(env_file: str | None = None) -> Config:
     cfg = Config()
-    for ini in (Path("/etc/digest/digest.conf"),
-                Path.home() / ".config/digest/digest.conf"):
+    for ini in (
+        Path("/etc/digest/digest.conf"),
+        Path("/etc/env/digest.default"),
+        Path.home() / ".config/digest/digest.conf",
+    ):
         if ini.exists():
-            parser = configparser.ConfigParser()
-            parser.read(ini)
-            _ini(cfg, parser)
+            if ini.suffix in (".conf", ".ini"):
+                parser = configparser.ConfigParser()
+                parser.read(ini)
+                _ini(cfg, parser)
+            else:
+                _dotenv(cfg, ini)
+    for dot in (
+        Path.home() / ".config/digest/digest.env",
+        Path.home() / ".config/digest.env",
+    ):
+        if dot.exists():
+            _dotenv(cfg, dot)
     dot = Path(env_file) if env_file else Path(".env/digest.env")
     if dot.exists():
         _dotenv(cfg, dot)
@@ -448,7 +460,7 @@ def llm_chat(cfg: Config, messages: list[dict]) -> str:
                 "max_tokens": cfg.llm_max_tokens}
         headers = {"Content-Type": "application/json"}
         if cfg.llm_api_key:
-            headers["Authorization"] = f"******"
+            headers["Authorization"] = "Bearer " + cfg.llm_api_key
     else:
         url = f"http://{cfg.llm_host}/api/chat"
         body = {"model": cfg.llm_model, "messages": messages, "stream": False,
