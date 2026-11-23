@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+file="${1:-}"; shift || true
+[[ -z "$file" || ! -f "$file" ]] && { echo "usage: saufia go <file> <instruction>" >&2; exit 1; }
+patch=$(ask "FILE: $file
+CONTENT:
+$(cat "$file")
+INSTRUCTION: $*" "Output ONLY code in a fenced block. No prose.")
+echo "$patch" >&2
+executor "$patch"

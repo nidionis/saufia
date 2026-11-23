@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+case "${1:-last}" in
+  last) cat "$SAUFIA_THOUGHT_DIR/last/answer" 2>/dev/null || echo "no thought" ;;
+  path) cat "$SAUFIA_THOUGHT_DIR/last/path" 2>/dev/null ;;
+  stack) thought_stack ;;
+  *) echo "usage: saufia thought [last|path|stack]" >&2 ;;
+esac

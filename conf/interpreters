@@ -1,0 +1,10 @@
+sh	sh
+bash	bash
+zsh	zsh
+python	python3
+python3	python3
+py	python3
+node	node
+js	node
+ruby	ruby
+perl	perl

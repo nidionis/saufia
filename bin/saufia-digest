@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+case "${1:-}" in
+  clean) digest_clean "${2:-.}" ;;
+  *)     digest "${1:-.}" ;;
+esac

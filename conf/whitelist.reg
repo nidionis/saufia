@@ -1,0 +1,13 @@
+^echo\s
+^printf\s
+^cat\s
+^head\s
+^tail\s
+^wc\s
+^grep\s
+^find\s
+^ls\s
+^pwd$
+^date$
+^which\s
+^type\s

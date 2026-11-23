@@ -1,0 +1,13 @@
+rm\s+-rf\s+/
+mkfs
+dd\s+if=
+:\(\)\{
+chmod\s+-R\s+777\s+/
+/dev/sd
+/dev/nvme
+shutdown
+reboot
+poweroff
+init\s+0
+kill\s+-9\s+1
+tee\s+/

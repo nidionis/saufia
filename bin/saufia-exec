@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+executor "$*"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+_cfg="${SAUFIA_CONF:-${SAUFIA_SVR_ROOT:-$HOME/.svr}/saufia/conf/global.conf}"
+[[ -f "$_cfg" ]] && source "$_cfg"
+echo "usage: saufia [@agent] <cmd> [args...]"
+echo "commands:"
+ls "$SAUFIA_ROOT"/bin/saufia-* 2>/dev/null | grep -vE 'saufia$|help' | xargs -r -n1 basename | sed 's/saufia-/  /' | sort
+echo "agents:"
+for d in "$SAUFIA_ROOT"/agents/*/; do
+  printf '  @%-10s %s\n' "$(basename "$d")" "$(head -1 "$d/prompt" 2>/dev/null)"
+done

@@ -1,0 +1,15 @@
+eval
+exec
+source
+bash\s+-c
+sh\s+-c
+perl\s+-e
+python[23]?\s+-c
+ruby\s+-e
+node\s+-e
+sed\s+.*-i
+awk\s+.*-i
+xargs\s+.*-I
+find\s+.*-exec
+find\s+.*-delete
+truncate

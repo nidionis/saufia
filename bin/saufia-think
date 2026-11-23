@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+[[ $# -eq 0 ]] && { echo "usage: saufia think <question> [dir]" >&2; exit 1; }
+thinker "$@"

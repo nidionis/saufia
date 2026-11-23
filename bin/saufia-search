@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+export SEARCH_ROOT="${SAUFIA_SEARCH_ROOT:-.}"
+search "$*"

@@ -1,0 +1,509 @@
+#!/usr/bin/env bash
+# saufia.deploy — idempotent, zero sudo, config-driven agents
+set -euo pipefail
+
+R_SVR="${SAUFIA_SVR_ROOT:-$HOME/.svr}"
+R_APP="${SAUFIA_ROOT:-$R_SVR/saufia}"
+R_BIN="$R_SVR/bin"
+R_VAR="$R_SVR/var/saufia"
+
+mkdir -p "$R_APP"/{conf,agents/{default,cold,hacker},lib,bin,prompts} \
+         "$R_BIN" "$R_VAR"/{logs,thoughts}
+
+# ─── CONFIG ──────────────────────────────────────────────────────────────────
+
+cat > "$R_APP/conf/global.conf" <<CONF
+APP_NAME="saufia"
+SVR_ROOT="$R_SVR"
+SAUFIA_ROOT="$R_APP"
+SAUFIA_BIN="$R_BIN"
+SAUFIA_LOG_DIR="$R_VAR/logs"
+SAUFIA_THOUGHT_DIR="$R_VAR/thoughts"
+OLLAMA_URL="http://127.0.0.1:11434"
+DEFAULT_AGENT="default"
+CONSOLID_DIR=".digest"
+SAUFIA_EXTS="sh py js ts md txt json yaml toml conf c h go rs"
+MAX_FILE_SIZE=65536
+TOKEN_MIN_LEN=3
+CONTEXT_RATIO=25
+MAX_DEPTH=2
+CONF
+
+cat > "$R_APP/conf/blacklist.reg" <<'EOF'
+rm\s+-rf\s+/
+mkfs
+dd\s+if=
+:\(\)\{
+chmod\s+-R\s+777\s+/
+/dev/sd
+/dev/nvme
+shutdown
+reboot
+poweroff
+init\s+0
+kill\s+-9\s+1
+tee\s+/
+EOF
+
+cat > "$R_APP/conf/whitelist.reg" <<'EOF'
+^echo\s
+^printf\s
+^cat\s
+^head\s
+^tail\s
+^wc\s
+^grep\s
+^find\s
+^ls\s
+^pwd$
+^date$
+^which\s
+^type\s
+EOF
+
+cat > "$R_APP/conf/edit_functions.reg" <<'EOF'
+eval
+exec
+source
+bash\s+-c
+sh\s+-c
+perl\s+-e
+python[23]?\s+-c
+ruby\s+-e
+node\s+-e
+sed\s+.*-i
+awk\s+.*-i
+xargs\s+.*-I
+find\s+.*-exec
+find\s+.*-delete
+truncate
+EOF
+
+cat > "$R_APP/conf/guard.paths" <<'EOF'
+/etc
+/boot
+/sys
+/proc
+/usr/bin
+/usr/sbin
+/bin
+/sbin
+/usr/lib
+/usr/lib64
+EOF
+
+cat > "$R_APP/conf/interpreters" <<'EOF'
+sh	sh
+bash	bash
+zsh	zsh
+python	python3
+python3	python3
+py	python3
+node	node
+js	node
+ruby	ruby
+perl	perl
+EOF
+
+# ─── AGENTS ──────────────────────────────────────────────────────────────────
+
+cat > "$R_APP/agents/default/conf" <<'EOF'
+AGENT_MODEL="${AGENT_MODEL:-qwen2.5-coder:1.5b}"
+AGENT_TEMPERATURE=0.1
+AGENT_TOP_P=0.9
+AGENT_TOP_K=40
+AGENT_NUM_PREDICT=256
+AGENT_REPEAT_LAST_N=0
+AGENT_MIROSTAT=2
+AGENT_MIROSTAT_TAU=3.0
+AGENT_MIROSTAT_ETA=0.1
+AGENT_SEED=0
+AGENT_NUM_KEEP=4
+EOF
+cat > "$R_APP/agents/default/prompt" <<'EOF'
+Shortest correct answer. No preamble. Code in fenced blocks.
+EOF
+
+cat > "$R_APP/agents/cold/conf" <<'EOF'
+AGENT_MODEL="${AGENT_MODEL:-qwen2.5-coder:1.5b}"
+AGENT_TEMPERATURE=0.0
+AGENT_TOP_P=0.1
+AGENT_TOP_K=1
+AGENT_NUM_PREDICT=128
+AGENT_REPEAT_LAST_N=0
+AGENT_MIROSTAT=2
+AGENT_MIROSTAT_TAU=1.5
+AGENT_MIROSTAT_ETA=0.05
+AGENT_SEED=42
+AGENT_NUM_KEEP=4
+EOF
+cat > "$R_APP/agents/cold/prompt" <<'EOF'
+Facts only. No hedging. No "I think". No apologies. Uncertain? Say "maybe" then answer.
+EOF
+
+cat > "$R_APP/agents/hacker/conf" <<'EOF'
+AGENT_MODEL="${AGENT_MODEL:-qwen2.5-coder:7b}"
+AGENT_TEMPERATURE=0.9
+AGENT_TOP_P=0.95
+AGENT_TOP_K=100
+AGENT_NUM_PREDICT=512
+AGENT_REPEAT_LAST_N=64
+AGENT_REPEAT_PENALTY=1.05
+AGENT_MIROSTAT=2
+AGENT_MIROSTAT_TAU=6.0
+AGENT_MIROSTAT_ETA=0.2
+AGENT_SEED=0
+AGENT_NUM_KEEP=0
+EOF
+cat > "$R_APP/agents/hacker/prompt" <<'EOF'
+You are a debugger. Think in syscalls, memory layouts, race conditions.
+Given code or an error:
+1. Name the exact failure mechanism (not the symptom).
+2. Minimal fix.
+3. One alternative hypothesis to test.
+4. If timing-related: suggest a stress test.
+Terse. Code with file:line.
+EOF
+
+# ─── LIBS ────────────────────────────────────────────────────────────────────
+
+cat > "$R_APP/lib/init.sh" <<'EOF'
+_cfg="${SAUFIA_CONF:-${SAUFIA_SVR_ROOT:-$HOME/.svr}/saufia/conf/global.conf}"
+[[ -f "$_cfg" ]] && source "$_cfg"
+export SAUFIA_CONF="$_cfg"
+for _lib in "$SAUFIA_ROOT"/lib/{ollama,agent,guard,executor,tokenize,digest,search,thinker}.sh; do
+  [[ -f "$_lib" ]] && source "$_lib"
+done
+load_agent "${SAUFIA_AGENT:-$DEFAULT_AGENT}"
+EOF
+
+cat > "$R_APP/lib/ollama.sh" <<'EOF'
+ollama_chat() {
+  local prompt="$1" sys="${2:-}" opts="${3:-{\}}"
+  curl -sf "$OLLAMA_URL/api/chat" -d "$(jq -n \
+    --arg m "$AGENT_MODEL" --arg s "$sys" --arg p "$prompt" --argjson o "$opts" \
+    '{model:$m,messages:[{role:"system",content:$s},{role:"user",content:$p}],stream:false,options:$o}'
+  )" | jq -r '.message.content // empty'
+}
+EOF
+
+cat > "$R_APP/lib/agent.sh" <<'EOF'
+load_agent() {
+  local name="${1:-$DEFAULT_AGENT}"
+  local dir="$SAUFIA_ROOT/agents/$name"
+  [[ -d "$dir" ]] || { echo "no agent: $name" >&2; return 1; }
+  [[ -f "$dir/conf" ]] && source "$dir/conf"
+  AGENT_SYSTEM=""
+  [[ -f "$dir/prompt" ]] && AGENT_SYSTEM="$(cat "$dir/prompt")"
+  AGENT_OPTS="$(jq -n \
+    --argjson t "${AGENT_TEMPERATURE:-0.7}" \
+    --argjson p "${AGENT_TOP_P:-0.9}" \
+    --argjson k "${AGENT_TOP_K:-40}" \
+    --argjson n "${AGENT_NUM_PREDICT:-256}" \
+    --argjson r "${AGENT_REPEAT_LAST_N:-64}" \
+    --argjson rp "${AGENT_REPEAT_PENALTY:-1.1}" \
+    --argjson ms "${AGENT_MIROSTAT:-0}" \
+    --argjson mt "${AGENT_MIROSTAT_TAU:-5.0}" \
+    --argjson me "${AGENT_MIROSTAT_ETA:-0.1}" \
+    --argjson sd "${AGENT_SEED:-0}" \
+    --argjson nk "${AGENT_NUM_KEEP:-0}" \
+    '{temperature:$t,top_p:$p,top_k:$k,num_predict:$n,repeat_last_n:$r,
+      repeat_penalty:$rp,mirostat:$ms,mirostat_tau:$mt,mirostat_eta:$me,seed:$sd,num_keep:$nk}')"
+}
+ask() { ollama_chat "$1" "${2:-$AGENT_SYSTEM}" "$AGENT_OPTS"; }
+EOF
+
+cat > "$R_APP/lib/guard.sh" <<'EOF'
+guard() {
+  local code="$1" src="${2:-llm}" cfg="$SAUFIA_ROOT/conf"
+  grep -qiE -f "$cfg/whitelist.reg" <<< "$code" && return 0
+  grep -qiE -f "$cfg/blacklist.reg" <<< "$code" && { echo "GUARD: BLOCKED (blacklist)" >&2; return 1; }
+  if [[ "$src" != "trusted" ]]; then
+    grep -qiE -f "$cfg/edit_functions.reg" <<< "$code" && { echo "GUARD: BLOCKED (edit)" >&2; return 1; }
+  fi
+  local path
+  while IFS= read -r path; do
+    [[ -z "$path" || "$path" == \#* ]] && continue
+    grep -qE "(>|tee|cp|mv|install|chmod|chown)\s.*${path}" <<< "$code" && { echo "GUARD: BLOCKED path $path" >&2; return 1; }
+  done < "$cfg/guard.paths"
+  return 0
+}
+EOF
+
+cat > "$R_APP/lib/executor.sh" <<'EOF'
+executor() {
+  local code="$1" lang="${2:-}"
+  [[ -z "$lang" ]] && lang=$(grep -oP '^```\K\w+' <<< "$code" | head -1 || true)
+  lang="${lang:-sh}"
+  local body
+  grep -q '^```' <<< "$code" && body=$(sed '/^```/,/^```/{/^```/d}' <<< "$$code") || body="$$code"
+  guard "$body" "llm" || return 1
+  local interp
+  interp=$$(awk -F'\t' -v l="$$lang" '\$1==l{print \$2}' "$SAUFIA_ROOT/conf/interpreters")
+  interp="$${interp:-$$lang}"
+  command -v "$$interp" &>/dev/null || { echo "EXEC: no '$$interp'" >&2; return 127; }
+  local tmp; tmp=$$(mktemp "$$SAUFIA_LOG_DIR/X.XXXXXX")
+  printf '%s\n' "$$body" > "$$tmp"
+  echo "EXEC: $interp" >&2
+  "$$interp" "$$tmp"; local rc=$?
+  rm -f "$$tmp"; return $$rc
+}
+EOF
+
+cat > "$R_APP/lib/tokenize.sh" <<'EOF'
+tokenize() {
+  tr '[:upper:]' '[:lower:]' | tr -cs '[:alnum:]' '\n' \
+    | grep -E "^.{$${TOKEN_MIN_LEN},}$$" | sort -u
+}
+EOF
+
+cat > "$R_APP/lib/digest.sh" <<'EOF'
+digest_dir() {
+  local dir="\$1" D="\$1/$CONSOLID_DIR"
+  mkdir -p "$D/references"
+  local -a files=() ext_args=() e
+  for e in $$SAUFIA_EXTS; do ext_args+=(-o -name "*.$$e"); done
+  while IFS= read -r -d '' f; do files+=("$f"); done \
+    < <(find "$dir" -maxdepth 1 -type f $$ "${ext_args[@]:1}" $$ -print0 2>/dev/null)
+  local subtree
+  subtree=$$(find "$$dir" -maxdepth 1 -mindepth 1 -type d \
+    ! -name "$CONSOLID_DIR" ! -name .git ! -name node_modules -printf ' %P\n' 2>/dev/null)
+  if (( ${#files[@]} == 0 )); then
+    printf '%s\n' "$${subtree:- (no subdirs)}" > "$$D/subtree"
+    echo "(empty)" > "$$D/summary"; : > "$$D/dictionary"
+    for r in code values citations; do : > "$$D/references/$$r"; done
+    echo " .digest $dir (empty)"; return
+  fi
+  local blob="" f sz
+  for f in "${files[@]}"; do
+    sz=$$(stat -c%s "$$f" 2>/dev/null || echo 0)
+    (( sz > MAX_FILE_SIZE )) && continue
+    blob+="=== $$(basename "$$f") ==="$$'\n'"$$(head -c "$$MAX_FILE_SIZE" "$$f")"$'\n\n'
+  done
+  local out
+  out=$(ask "Analyze. Output EXACTLY 4 lines, no markdown:
+SUMMARY: <2 sentences>
+CODE: <key functions/classes>
+VALUES: <constants, configs>
+CITATIONS: <file:line refs>
+$blob")
+  awk '/^SUMMARY:/{sub(/^SUMMARY: ?/,"");print > "'"$D"'/summary"}
+       /^CODE:/{sub(/^CODE: ?/,"");print > "'"$D"'/references/code"}
+       /^VALUES:/{sub(/^VALUES: ?/,"");print > "'"$D"'/references/values"}
+       /^CITATIONS:/{sub(/^CITATIONS: ?/,"");print > "'"$$D"'/references/citations"}' <<< "$$out"
+  [[ -s "$$D/summary" ]] || echo "(no summary)" > "$$D/summary"
+  for r in code values citations; do [[ -s "$$D/references/$$r" ]] || : > "$$D/references/$$r"; done
+  : > "$D/dictionary"
+  for f in "${files[@]}"; do
+    tokenize < "$$f" | while read -r tok; do printf '%s\t%s\n' "$$tok" "$$(basename "$$f")"; done >> "$D/dictionary"
+  done
+  printf '%s\n' "$${subtree:- (no subdirs)}" > "$$D/subtree"
+  echo " .digest $$dir ($${#files[@]} files)"
+}
+
+digest() {
+  local target; target="$$(cd "$${1:-.}" && pwd)"
+  echo "digest: $target"
+  while IFS= read -r -d '' d; do digest_dir "$d"; done \
+    < <(find "$target" $$ -name .git -o -name node_modules -o -name "$CONSOLID_DIR" $$ -prune -o -type d -print0)
+  echo "done."
+}
+
+digest_clean() {
+  local dir; dir="$$(cd "$${1:-.}" && pwd)"
+  find "$$dir" -type d -name "$$CONSOLID_DIR" -prune -exec rm -rf {} + 2>/dev/null
+  echo "cleaned under $dir"
+}
+EOF
+
+cat > "$R_APP/lib/search.sh" <<'EOF'
+search() {
+  local root="${SEARCH_ROOT:-.}" q_tokens
+  q_tokens=$$(echo "$$*" | tokenize)
+  local -A scores=()
+  while IFS= read -r -d '' dic; do
+    local folder; folder="$$(dirname "$$(dirname "$dic")")"
+    local tok file
+    while IFS=$'\t' read -r tok file; do
+      [[ -z "$tok" ]] && continue
+      grep -qxF "$$tok" <<< "$$q_tokens" && scores["$$folder/$$file"]=$$(( $${scores["$$folder/$$file"]:-0} + 1 ))
+    done < "$dic"
+  done < <(find "$$root" -path "*/$$CONSOLID_DIR/dictionary" -print0 2>/dev/null)
+  local top=$$(( $${#scores[@]} * CONTEXT_RATIO / 100 )); (( top < 1 )) && top=1
+  for f in "$${!scores[@]}"; do echo "$${scores[$$f]} $$f"; done | sort -rn | head -n "$top"
+}
+EOF
+
+cat > "$R_APP/lib/thinker.sh" <<'EOF'
+thinker() {
+  local question="\$1" start="${2:-.}"
+  start="$$(cd "$$start" && pwd)"
+  local tid; tid=$(date +%s%N | tail -c 14)
+  local tdir="$$SAUFIA_THOUGHT_DIR/$$tid"
+  mkdir -p "$tdir"
+  echo "$$question" > "$$tdir/question"
+  ln -sfn "$$tdir" "$$SAUFIA_THOUGHT_DIR/last"
+  local -a path=()
+  local current="$start"
+  while true; do
+    local D="$$current/$$CONSOLID_DIR"
+    [[ -d "$D" ]] || break
+    local -a children=()
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      children+=("$$(echo "$$line" | sed 's/^ //')")
+    done < "$D/subtree"
+    local real_children=()
+    for c in "${children[@]}"; do
+      [[ "$$c" == "$$CONSOLID_DIR" ]] && continue
+      real_children+=("$c")
+    done
+    if (( ${#real_children[@]} == 0 )); then
+      path+=("$current")
+      break
+    fi
+    local compare=""
+    for c in "${real_children[@]}"; do
+      local csum="$$current/$$c/$CONSOLID_DIR/summary"
+      local ctxt="(no summary)"
+      [[ -f "$$csum" ]] && ctxt="$$(cat "$csum")"
+      compare+="$$c: $$ctxt"$'\n'
+    done
+    local choice
+    choice=$$(ask "Question: $$question
+
+Available branches (name: summary):
+$compare
+
+Reply with ONLY the branch name most relevant. Nothing else.")
+    choice=$$(echo "$$choice" | tr -d '[:space:]')
+    local found=0
+    for c in "${real_children[@]}"; do
+      [[ "$$c" == "$$choice" ]] && { found=1; break; }
+    done
+    (( found == 0 )) && choice="${real_children[0]}"
+    path+=("$$current/$$choice")
+    current="$$current/$$choice"
+  done
+  printf '%s\n' "$${path[@]}" > "$$tdir/path"
+  local leaf="$${path[-1]}" leafD="$$leaf/$CONSOLID_DIR"
+  local ctx=""
+  [[ -f "$$leafD/summary" ]] && ctx+="SUMMARY: $$(cat "$$leafD/summary")"$$'\n'
+  for r in code values citations; do
+    [[ -s "$$leafD/references/$$r" ]] && ctx+="$$(echo "$$r" | tr 'a-z' 'A-Z'): $$(cat "$$leafD/references/$$r")"$$'\n'
+  done
+  local answer
+  answer=$$(ask "$$ctx
+
+QUESTION: $question")
+  echo "$$answer" > "$$tdir/answer"
+  echo "$answer"
+}
+
+thought_stack() {
+  ls -1 "$$SAUFIA_THOUGHT_DIR" 2>/dev/null | grep -v '^last$$' | sort -rn
+}
+EOF
+
+# ─── BIN ─────────────────────────────────────────────────────────────────────
+
+cat > "$R_APP/bin/saufia" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+_cfg="$${SAUFIA_CONF:-$${SAUFIA_SVR_ROOT:-$HOME/.svr}/saufia/conf/global.conf}"
+[[ -f "$$_cfg" ]] && source "$$_cfg"
+ROOT="${SAUFIA_ROOT:?}"
+[[ "$${1:-}" == @* ]] && { SAUFIA_AGENT="$${1#@}"; shift; }
+cmd="${1:-help}"; shift || true
+sub="$$ROOT/bin/saufia-$$cmd"
+[[ -x "$$sub" ]] || { echo "no command: $$cmd" >&2; exec "$ROOT/bin/saufia-help"; }
+export SAUFIA_CONF="$$_cfg" SAUFIA_ROOT="$$ROOT" SAUFIA_AGENT="$${SAUFIA_AGENT:-$$DEFAULT_AGENT}"
+exec "$$sub" "$$@"
+EOF
+
+cat > "$R_APP/bin/saufia-help" <<'EOF'
+#!/usr/bin/env bash
+_cfg="$${SAUFIA_CONF:-$${SAUFIA_SVR_ROOT:-$HOME/.svr}/saufia/conf/global.conf}"
+[[ -f "$$_cfg" ]] && source "$$_cfg"
+echo "usage: saufia [@agent] <cmd> [args...]"
+echo "commands:"
+ls "$$SAUFIA_ROOT"/bin/saufia-* 2>/dev/null | grep -vE 'saufia$$|help' | xargs -r -n1 basename | sed 's/saufia-/  /' | sort
+echo "agents:"
+for d in "$SAUFIA_ROOT"/agents/*/; do
+  printf '  @%-10s %s\n' "$$(basename "$$d")" "$$(head -1 "$$d/prompt" 2>/dev/null)"
+done
+EOF
+
+cat > "$R_APP/bin/saufia-ask" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+[[ $# -eq 0 ]] && { echo "usage: saufia ask <prompt>" >&2; exit 1; }
+ask "$*"
+EOF
+
+cat > "$R_APP/bin/saufia-exec" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+executor "$*"
+EOF
+
+cat > "$R_APP/bin/saufia-go" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+file="${1:-}"; shift || true
+[[ -z "$$file" || ! -f "$$file" ]] && { echo "usage: saufia go <file> <instruction>" >&2; exit 1; }
+patch=$$(ask "FILE: $$file
+CONTENT:
+$$(cat "$$file")
+INSTRUCTION: $*" "Output ONLY code in a fenced block. No prose.")
+echo "$patch" >&2
+executor "$patch"
+EOF
+
+cat > "$R_APP/bin/saufia-think" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+[[ $# -eq 0 ]] && { echo "usage: saufia think <question> [dir]" >&2; exit 1; }
+thinker "$@"
+EOF
+
+cat > "$R_APP/bin/saufia-digest" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+case "${1:-}" in
+  clean) digest_clean "${2:-.}" ;;
+  *)     digest "${1:-.}" ;;
+esac
+EOF
+
+cat > "$R_APP/bin/saufia-search" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+export SEARCH_ROOT="${SAUFIA_SEARCH_ROOT:-.}"
+search "$*"
+EOF
+
+cat > "$R_APP/bin/saufia-thought" <<'EOF'
+#!/usr/bin/env bash
+source "$SAUFIA_ROOT/lib/init.sh"
+case "${1:-last}" in
+  last) cat "$SAUFIA_THOUGHT_DIR/last/answer" 2>/dev/null || echo "no thought" ;;
+  path) cat "$SAUFIA_THOUGHT_DIR/last/path" 2>/dev/null ;;
+  stack) thought_stack ;;
+  *) echo "usage: saufia thought [last|path|stack]" >&2 ;;
+esac
+EOF
+
+# ─── PROMPTS ─────────────────────────────────────────────────────────────────
+
+cat > "$R_APP/prompts/writer.prompt" <<'EOF'
+Output ONLY code in a fenced block with language tag. No prose outside the fence.
+EOF
+
+# ─── PERMISSIONS & SYMLINK ──────────────────────────────────────────────────
+
+chmod +x "$R_APP"/bin/saufia "$R_APP"/bin/saufia-*
+ln -sf "$R_APP/bin/saufia" "$R_BIN/saufia"
+
+echo "installed → $R_APP"
+echo "PATH += $R_BIN"

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+_cfg="${SAUFIA_CONF:-${SAUFIA_SVR_ROOT:-$HOME/.svr}/saufia/conf/global.conf}"
+[[ -f "$_cfg" ]] && source "$_cfg"
+ROOT="${SAUFIA_ROOT:?}"
+[[ "${1:-}" == @* ]] && { SAUFIA_AGENT="${1#@}"; shift; }
+cmd="${1:-help}"; shift || true
+sub="$ROOT/bin/saufia-$cmd"
+[[ -x "$sub" ]] || { echo "no command: $cmd" >&2; exec "$ROOT/bin/saufia-help"; }
+export SAUFIA_CONF="$_cfg" SAUFIA_ROOT="$ROOT" SAUFIA_AGENT="${SAUFIA_AGENT:-$DEFAULT_AGENT}"
+exec "$sub" "$@"

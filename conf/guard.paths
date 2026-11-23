@@ -1,0 +1,10 @@
+/etc
+/boot
+/sys
+/proc
+/usr/bin
+/usr/sbin
+/bin
+/sbin
+/usr/lib
+/usr/lib64
