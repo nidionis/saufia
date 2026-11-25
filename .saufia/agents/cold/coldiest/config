@@ -1,2 +1,3 @@
+#idem -> softcode it and cold should be $FRESH
 AGENT_TOP_P=0.05
-AGENT_NUM_PREDICT=64
+AGENT_NUM_PREDICT=$HAIKU_SIZE

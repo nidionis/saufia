@@ -1,1 +1,6 @@
-AGENT_TEMPERATURE=0.3
+# Should contains and be used as REFERENCE.
+# as config maker : make an agent that gather
+# all variables names of subfolders, ideally defined
+# and comment them all as configfile maker
+AGENT_TEMPERATURE=0.7
+

@@ -6,12 +6,14 @@ agent::load() {
   scope::load "$dir"                          # agents/config → … → name/config
   AGENT_SYSTEM="$(prompt::resolve "$dir" || true)"
 
+  # prefered softcoded with
+    # key:t value:"${AGENT_TEMPERATURE}"
   AGENT_OPTS="$(jq -n \
-    --argjson t "${AGENT_TEMPERATURE:-0.7}" \
-    --argjson p "${AGENT_TOP_P:-0.9}" \
-    --argjson k "${AGENT_TOP_K:-40}" \
-    --argjson n "${AGENT_NUM_PREDICT:-256}" \
-    --argjson ms "${AGENT_MIROSTAT:-0}" \
-    --argjson sd "${AGENT_SEED:-0}" \
+    --argjson t "${AGENT_TEMPERATURE}" \
+    --argjson p "${AGENT_TOP_P}" \
+    --argjson k "${AGENT_TOP_K}" \
+    --argjson n "${AGENT_NUM_PREDICT}" \
+    --argjson ms "${AGENT_MIROSTAT}" \
+    --argjson sd "${AGENT_SEED}" \
     '{temperature:$t,top_p:$p,top_k:$k,num_predict:$n,mirostat:$ms,seed:$sd}')"
 }
