@@ -1,0 +1,28 @@
+match() {
+    local input="$1" f pat mem
+    local -a resp
+    GRP=(); MEM_SLOT=""
+    for f in $(find "$RULES" -maxdepth 1 -name '[0-9]*' | sort); do
+        pat=""; mem=""; resp=()
+        while IFS= read -r line; do
+            [[ "$line" =~ ^#|^$ ]] && continue
+            case "$line" in
+                @pattern\ *) pat="${line#@pattern }" ;;
+                @memory\ *)  mem="${line#@memory }" ;;
+                @response\ *) resp+=("${line#@response }") ;;
+                @end)
+                    if [[ -n "$pat" ]]; then
+                        if [[ "$input" =~ $pat ]]; then
+                            local i
+                            for i in "${!BASH_REMATCH[@]}"; do GRP["$i"]="${BASH_REMATCH[$i]}"; done
+                            MEM_SLOT="$mem"
+                            printf '%s\n' "${resp[@]}"
+                            return 0
+                        fi
+                    fi
+                    pat=""; resp=() ;;
+            esac
+        done < "$f"
+    done
+    return 1
+}

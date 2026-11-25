@@ -1,0 +1,15 @@
+@pattern ^i\s*am\s+(sad|unhappy|depressed|down|lonely|angry|mad|afraid|scared|anxious|worried|confused|lost|empty|numb)$
+@response     {1}
+@response     {1}
+@response      {1}
+@end
+@pattern ^i\s*am\s+(.*)$
+@response    {1}
+@response      {1}
+@response  {1}      
+@end
+@pattern ^i'?m\s+(.*)$
+@response    {1}
+@response      {1}
+@response  {1}  
+@end

@@ -1,0 +1,5 @@
+@pattern ^i\s+(can'?t|cannot|won'?t)\s+(.*)$
+@response      {2}
+@response     {2}
+@response     {2}
+@end

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Walk up until we find etc/eliza.conf
+H="$(dirname "${BASH_SOURCE[0]}")"
+while [[ ! -f "$H/etc/eliza.conf" ]]; do
+    H="$(dirname "$H")"
+    [[ "$H" == "/" ]] && { echo "FATAL: etc/eliza.conf not found"; exit 1; }
+done
+H="$(cd "$H" && pwd)"; export H
+
+source "$H/etc/eliza.conf"
+
+while IFS= read -r f; do source "$f"; done \
+  < <(find "$H/lib" -type f | sort)
+
+banner; loop

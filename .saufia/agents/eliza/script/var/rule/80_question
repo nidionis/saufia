@@ -1,0 +1,9 @@
+@pattern ^(what|how|why|when|where|who|which)\b
+@response    
+@response     
+@response      
+@end
+@pattern ^(yes|no|maybe|perhaps)$
+@response     {1}
+@response     
+@end

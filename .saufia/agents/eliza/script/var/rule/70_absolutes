@@ -1,0 +1,5 @@
+@pattern \b(always|never|everybody|everyone|nobody|no-one|all|nothing|everything|forever)\b
+@response    {1}    
+@response       12:23:34
+@response     {1}
+@end

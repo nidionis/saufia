@@ -1,0 +1,1 @@
+banner() { [[ -f "$BANNER" ]] && cat "$BANNER"; echo "$GREETING"; echo; }

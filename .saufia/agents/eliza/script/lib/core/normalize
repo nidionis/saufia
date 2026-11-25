@@ -1,0 +1,6 @@
+normalize() {
+    local s="${1,,}"
+    s="$(printf '%s' "$s" | tr -dc 'a-z ')"
+    s="$(printf '%s' "$s" | tr -s ' ')"
+    printf '%s' "${s# }"; printf '%s' "${s% }"
+}

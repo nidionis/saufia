@@ -1,0 +1,5 @@
+@pattern (because|since|due to|the reason)\s+(.*)$
+@response     
+@response  {2}  
+@response     
+@end
