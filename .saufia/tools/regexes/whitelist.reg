@@ -1,0 +1,2 @@
+^(echo|printf|cat|head|tail|wc|grep|find|ls|which|type|man|strings)\s
+^(pwd|date)$
