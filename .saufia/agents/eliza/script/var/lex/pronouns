@@ -1,4 +1,3 @@
-# src<TAB>dst — longest first
 i'm	you're
 im	you're
 i've	you've
@@ -17,8 +16,17 @@ your	my
 me	you
 you	me
 i	you
+we	they
+they	we
+our	their
+their	our
 am	are
+are	am
 was	were
 were	was
+has	have
+have	has
 his	her
+her	his
 she	he
+he	she

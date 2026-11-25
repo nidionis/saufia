@@ -1,5 +1,0 @@
-apply() {
-    local tmpl
-    tmpl="$(echo "$1" | shuf -n 1)"
-    compose "$tmpl"
-}

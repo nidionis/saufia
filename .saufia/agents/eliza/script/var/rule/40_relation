@@ -1,6 +1,0 @@
-@pattern \b(my\s+(mother|father|parent|brother|sister|sibling|family|friend|husband|wife|partner|boyfriend|girlfriend|son|daughter|child|baby))\b
-@memory relation
-@response    {1}
-@response    {1}   
-@response       {1}
-@end

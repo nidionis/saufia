@@ -1,1 +1,0 @@
-bye() { echo; echo "  $(pick "$FAREWELL")"; echo; }

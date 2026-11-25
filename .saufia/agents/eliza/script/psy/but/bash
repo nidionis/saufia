@@ -1,0 +1,2 @@
+CTX[focus]="${BASH_REMATCH[2]}"
+CTX[focus]="$(reflect "${CTX[focus]}")"

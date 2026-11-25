@@ -1,8 +1,0 @@
-mirror() {
-    local first="${1%% *}"
-    case "$first" in
-        i|im|i\'m|ive|i\'ve|ill|i\'ll|id|i\'d) echo "you" ;;
-        you|you\'re|you\'ve|you\'ll|you\'d)     echo "i" ;;
-        *)                                       echo "$first" ;;
-    esac
-}

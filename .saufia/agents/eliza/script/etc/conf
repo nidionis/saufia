@@ -1,0 +1,7 @@
+RULES="$H/psy"
+LEX="$H/var/lex"
+PRONOUNS="$LEX/pronouns"
+PROMPT="> "
+GREETING="What's troubling you?"
+EXIT_RE='^(exit|quit|bye|goodbye|stop)$'
+FAREWELL='Goodbye.|See you.|Take care.'

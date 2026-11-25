@@ -1,5 +1,0 @@
-@pattern ^you\s*(are|'?re)\s+(.*)$
-@response       {2}
-@response        {2}
-@response       
-@end

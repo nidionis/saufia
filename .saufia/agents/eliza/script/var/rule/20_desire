@@ -1,9 +1,0 @@
-@pattern ^i\s+(want|need|wish)\s+(.*)$
-@response   {2}   
-@response     {2}
-@response  {2}   
-@end
-@pattern ^i'?d\s+like\s+(.*)$
-@response   {1}   
-@response  {1}
-@end
