@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# [show <name>] — list agents, or dump one agent
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+[[ "${1:-}" == show ]] && { shift; agent::show "$1"; } || agent::list

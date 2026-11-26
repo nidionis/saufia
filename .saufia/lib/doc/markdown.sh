@@ -1,5 +1,5 @@
-# doc::markdown <topic> — softcoded markdown maker
+# doc::markdown <topic>
 doc::markdown() {
   agent::load "markdown"
-  prompt::ask "\$1"
+  prompt::ask "$1"
 }

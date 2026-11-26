@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# [question] — help via the helper agent (bash context, LLM optional)
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+if [[ $# -gt 0 ]]; then help::ask "$*"; else help::print; fi

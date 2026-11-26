@@ -1,5 +1,5 @@
-# doc::man <topic> — softcoded man maker
+# doc::man <topic>
 doc::man() {
   agent::load "man"
-  prompt::ask "\$1"
+  prompt::ask "$1"
 }

@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
-set -euo pipefail
 _here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export SAUFIA_CTX="${SAUFIA_CTX:-$_here/../.saufia}"
+export CONTEXT="${CONTEXT:-${SAUFIA_CTX:-$_here/../.saufia}}"
+export SAUFIA_CTX="$CONTEXT"
+export PROG="$(basename "$0")"
 [[ "${1:-}" == @* ]] && { export SAUFIA_AGENT="${1#@}"; shift; }
-cmd="${1:-help}"; shift || true
-sub="$_here/saufia-$cmd"
-[[ -x "$sub" ]] || { echo "saufia: no '$cmd'" >&2; exit 1; }
-exec "$sub" "$@"
+
+CMD="${1:-help}"; shift || true
+SUB="$_here/saufia-$CMD"
+[[ -x "$SUB" ]] && exec "$SUB" "$@"
+
+source "$CONTEXT/lib/init.sh"
+if verb::exists "$CMD"; then
+  verb::run "$CMD" "$@"
+  exit $?
+fi
+echo "saufia: no command or verb '$CMD' (try: saufia help)" >&2
+exit 1

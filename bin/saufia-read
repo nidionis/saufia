@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# [file...] — render markdown with glow (installs it if REPO_SELECT allows)
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+[[ -t 0 && $# -eq 0 ]] || { [[ -t 0 ]] || { read::pipe; exit $?; }; }
+read::run "$@"

@@ -5,16 +5,15 @@ verb::list() {
 }
 
 # verb::exists <name::verb>
-verb::exists() { declare -F "\$1" >/dev/null 2>&1; }
+verb::exists() { declare -F "$1" >/dev/null 2>&1; }
 
 # verb::run <name::verb> [args] — dispatch a loaded verb.
-# The active agent is whatever init loaded (@agent prefix or default).
 verb::run() {
-  local VERB="\$1"; shift || true
+  local VERB="$1"; shift || true
   if ! verb::exists "$VERB"; then
-    echo "verb::run: '$VERB' not defined (try: \$0 @agent help::verbs)" >&2
+    echo "verb::run: '$VERB' not defined (try: $0 @agent help::verbs)" >&2
     return 1
   fi
-  printf '[$SAUFIA_AGENT] %s %s\n' "$VERB" "$*" >&2
+  printf '[%s] %s %s\n' "${SAUFIA_AGENT:-default}" "$VERB" "$*" >&2
   "$VERB" "$@"
 }

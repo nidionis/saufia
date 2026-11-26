@@ -1,8 +1,7 @@
 # prompt::stack <dir> [question] — append all prompts in dir as context
 prompt::stack() {
-  local dir="\$1" q="${2:-}"
+  local dir="$1" q="${2:-}"
   local ctx=""
-  # Match both "prompt" (exact) and "*.prompt" (glob)
   if [[ -f "$dir/prompt" ]]; then
     ctx="$(cat "$dir/prompt")"
   fi
