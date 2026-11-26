@@ -1,6 +1,12 @@
-# Should contains and be used as REFERENCE.
-# as config maker : make an agent that gather
-# all variables names of subfolders, ideally defined
-# and comment them all as configfile maker
-AGENT_TEMPERATURE=0.7
+# TEMPLATE — copy to create new agent config.
+# scope::load walks root->dir, only override what differs.
+#
+# Available softcoded vars (from root config):
+#   Models: MODEL, SMALL_MODEL, MEDIUM_MODEL
+#   Temps:  FROZEN, FRESH, COLD
+#   Sizes:  HAIKU_SIZE, GATHA_SIZE, SONNET
+#   Misc:   UNIQ, FROZEN_SEED
+#
+# Convention: AGENT_ prefix for agent-scoped params.
 
+AGENT_TEMPERATURE=0.7

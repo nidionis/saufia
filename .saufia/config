@@ -1,7 +1,28 @@
+# === Global defaults ===
 MODEL="qwen3:0.6b"
 OLLAMA_URL=http://127.0.0.1:11434
 SANDBOX_DIR=.sandbox
 TIMEOUT=30
-DIGEST_DIR=.digest
-TOKENS_DIV=200
+
+# === Consolidation (replaces DIGEST_DIR) ===
+CONSOLIDATION_DIR=.consolidation
+CONSOLIDATION_MAX_LINES=200
 TOKEN_SIZE_MIN=3
+
+# === Softcoded model aliases ===
+SMALL_MODEL="qwen2.5-coder:0.5b"
+MEDIUM_MODEL="qwen3-coder:1.5b"
+
+# === Softcoded temperature aliases ===
+FROZEN=0.0
+FRESH=0.25
+COLD=0.1
+
+# === Softcoded size aliases ===
+HAIKU_SIZE=64
+GATHA_SIZE=512
+SONNET=128
+
+# === Sampling aliases ===
+UNIQ=1
+FROZEN_SEED=42
