@@ -27,3 +27,11 @@ done < <(find "$CONTEXT/lib" -type f -name '*.sh' -print0 2>/dev/null | sort -z)
 
 source "$CONTEXT/config"
 agent::load "${SAUFIA_AGENT:-default}"
+
+# Auto-fit: if the loaded model isn't installed, pick the best available.
+# Set WORST_PREFERED=0 in config to disable fallback.
+if [[ "${OLLAMA_FIT:-1}" == "1" ]] && declare -F ollama::fit_apply >/dev/null 2>&1; then
+  if ! ollama::available "${AGENT_MODEL:-$MODEL}" 2>/dev/null; then
+    ollama::fit_apply "${AGENT_MODEL:-$MODEL}" || true
+  fi
+fi

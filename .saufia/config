@@ -48,3 +48,7 @@ MD_DIR="$DOT_ROOT"
 REPO_SELECT="auto"          # auto | dnf | apt | pacman | zypper | brew | go
 INSTALL_ASSUME_YES=1
 GLOW_PKG="glow"
+
+# === Ollama fit ===
+WORST_PREFERED=1          # 1=allow smaller fallback, 0=strict exact match
+OLLAMA_FIT=1              # 1=auto-fit on load, 0=skip

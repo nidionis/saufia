@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# saufia-edit — guarded file writer. No agent, no LLM. Pure I/O.
+# Usage: saufia edit <path> [content]
+# echo "hello" | saufia edit <path>
+source "${SAUFIA_CTX:?}/lib/init.sh"
+FILE="${1:?usage: saufia edit <path> [content]}"
+shift || true
+if [[ $# -gt 0 ]]; then
+CONTENT="$1"
+elif [[ ! -t 0 ]]; then
+CONTENT="$(cat)"
+else
+echo "saufia-edit: no content" >&2; exit 1
+fi
+guard::load || exit $?
+guard::check "write $FILE" || exit 1
+mkdir -p "$(dirname "$FILE")"
+printf '%s\n' "$CONTENT" > "$FILE"
+echo "edit: $FILE ($(wc -c < "$FILE") bytes)"
