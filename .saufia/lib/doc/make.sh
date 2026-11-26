@@ -11,17 +11,17 @@ doc::ask_step() {  # <agent> <input>
 
 doc::make() {
   local topic="\$1" fmt="${2:-md}"
-  local scratch; scratch="$$(mktemp -d "$$CONTEXT/.state/doc.XXXXXX")"
+  local scratch; scratch="$(mktemp -d "$CONTEXT/.state/doc.XXXXXX")"
 
-  doc::ask_step "classer"   "$$topic"           > "$$scratch/class"
-  doc::ask_step "summarize" "$$(cat "$$scratch/class")" > "$scratch/sum"
-  doc::ask_step "owto"      "$$topic"           > "$$scratch/how"
-  doc::ask_step "note"      "$$(cat "$$scratch/sum")"   > "$scratch/note"
+  doc::ask_step "classer"   "$topic"           > "$scratch/class"
+  doc::ask_step "summarize" "$(cat "$scratch/class")" > "$scratch/sum"
+  doc::ask_step "owto"      "$topic"           > "$scratch/how"
+  doc::ask_step "note"      "$(cat "$scratch/sum")"   > "$scratch/note"
 
   # heap = accumulated context; stack order preserved by cat order
-  local heap; heap="$$(cat "$$scratch/class" "$$scratch/sum" "$$scratch/how" "$scratch/note")"
+  local heap; heap="$(cat "$scratch/class" "$scratch/sum" "$scratch/how" "$scratch/note")"
 
   agent::load "formator"
-  FILETYPE="$$fmt" prompt::ask "$$heap"
+  FILETYPE="$fmt" prompt::ask "$heap"
   rm -rf "$scratch"
 }

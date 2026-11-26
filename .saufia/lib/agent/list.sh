@@ -1,11 +1,13 @@
-# agent::list [root] — every folder that has config and/or prompt.
+# agent::list [root] — folders holding a config file.
+# A bare prompt (eliza psy/*) is a rule; a bin/ dir is an entrypoint.
+# Both are excluded: only config marks an agent.
 agent::list() {
   local ROOT="${1:-$CONTEXT/agents}" DIR
   [[ -d "$ROOT" ]] || return 1
-  while IFS= read -r DIR; do
-    [[ -f "$DIR/config" || -f "$DIR/prompt" ]] || continue
+  while IFS= read -r -d '' DIR; do
+    [[ -f "$DIR/config" ]] || continue
     printf '%s\n' "${DIR#"$ROOT"/}"
-  done < <(find "$ROOT" -mindepth 1 -type d 2>/dev/null | sort)
+  done < <(find "$ROOT" -mindepth 1 -type d -print0 2>/dev/null | sort -z)
 }
 
 # agent::show <name> — dump config + prompt (pure bash)

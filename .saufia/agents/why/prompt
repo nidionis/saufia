@@ -1,1 +1,1 @@
-Explain {I}. {I} origin.
+Explain "$BASH_SOURCE[0]". "$BASH_SOURCE[0]" origin.

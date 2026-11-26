@@ -1,0 +1,6 @@
+# read renders markdown with glow (no LLM). coldiest is the fallback
+# used only when glow cannot be installed.
+AGENT_TEMPERATURE=$FRESH
+AGENT_NUM_PREDICT=$GATHA_SIZE
+GLOW_PAGER="glow"
+GLOW_STYLE="notty"

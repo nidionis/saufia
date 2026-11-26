@@ -1,4 +1,8 @@
 # saufia bootstrap — self-locating, deterministic, no baked paths.
+# Re-entry guard: lib/init.sh lives inside lib/, so the recursive walk
+# below would otherwise source it forever (fd exhaustion).
+[[ -n "${_SAUFIA_INIT_DONE:-}" ]] && return 0
+
 saufia::locate() {
   local DIR="${1:-$PWD}"
   while [[ "$DIR" != "/" ]]; do
@@ -12,10 +16,14 @@ saufia::locate() {
 DOT_ROOT="${DOT_ROOT:-$(dirname "$CONTEXT")}"
 export DOT_ROOT CONTEXT
 export SAUFIA_CTX="$CONTEXT"          # legacy alias — eliza untouched
+export _SAUFIA_INIT_DONE=1
 
-for FILE in "$CONTEXT"/lib/*/*.sh; do
-  [[ -f "$FILE" ]] && source "$FILE"
-done
+# Recursive (lib/*/*.sh and lib/*/*/*.sh) but never this file.
+# sort gives deterministic order; null-delimited handles spaces.
+while IFS= read -r -d '' FILE; do
+  [[ "$FILE" == "$CONTEXT/lib/init.sh" ]] && continue
+  source "$FILE"
+done < <(find "$CONTEXT/lib" -type f -name '*.sh' -print0 2>/dev/null | sort -z)
 
 source "$CONTEXT/config"
 agent::load "${SAUFIA_AGENT:-default}"

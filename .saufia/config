@@ -37,3 +37,14 @@ GATHA_SIZE=512
 SONNET=128
 UNIQ=1
 FROZEN_SEED=42
+
+# === Reader ===
+GLOW_PAGER="glow"
+GLOW_STYLE="notty"
+GLOW_WIDTH=92
+MD_DIR="$DOT_ROOT"
+
+# === Install ===
+REPO_SELECT="auto"          # auto | dnf | apt | pacman | zypper | brew | go
+INSTALL_ASSUME_YES=1
+GLOW_PKG="glow"

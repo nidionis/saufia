@@ -1,41 +1,37 @@
-# doc::readme [outfile] [dir] — README.md built ENTIRELY in bash.
-# No LLM call unless DOC_USE_LLM=1 (then only for one description line).
+# doc::readme [outfile] [dir] — README.md built entirely in bash.
+# LLM only decorates the description when DOC_USE_LLM=1.
 doc::readme() {
-  local out="${1:-README.md}" dir="${2:-$CONTEXT}"
+  local OUT="${1:-README.md}" DIR="${2:-$CONTEXT}" DESC
 
-  # --- name + synopsis: from config comments ---
-  printf '# %s\n\n' "$(basename "$(dirname "$dir")")" > "$out"
+  printf '# %s\n\n' "$(basename "$DIR")" > "$OUT"
 
-  # --- synopsis: every public function in lib/ ---
-  printf '## Synopsis\n\n```bash\n' >> "$out"
-  grep -rhoE '^[a-z][a-z0-9_]*::[a-z][a-z0-9_]*$$$$' "$dir/lib" 2>/dev/null \
-    | sed 's/()//' | sort -u >> "$out"
-  printf '```\n\n' >> "$out"
-
-  # --- configuration table: KEY=value from root config ---
-  printf '## Configuration\n\n| Variable | Value |\n|---|---|\n' >> "$out"
-  grep -E '^[A-Z][A-Z0-9_]*=' "$dir/config" 2>/dev/null \
-    | sed 's/^\([A-Z0-9_]*\)=\(.*\)$$/| `\1` | `\2` |/' >> "$$out"
-  printf '\n' >> "$out"
-
-  # --- agents table: folder listing, prompt first line as description ---
-  printf '## Agents\n\n| Agent | Prompt | Temperature |\n|---|---|---|\n' >> "$out"
-  local a p t
-  while IFS= read -r a; do
-    p="$$(prompt::resolve "$$a" 2>/dev/null | head -1 || echo '-')"
-    t="$$(grep -h '^AGENT_TEMPERATURE=' "$$a/config" 2>/dev/null | head -1 | cut -d= -f2 || echo '-')"
-    printf '| %s | %s | %s |\n' \
-      "$${a#"$$dir/agents/"}" "$${p:--}" "$${t:--}" >> "$out"
-  done < <(find "$dir/agents" -mindepth 1 -maxdepth 1 -type d \
-             ! -name eliza | sort)
-  printf '\n' >> "$out"
-
-  # --- optional LLM top layer: one description line ---
   if [[ "${DOC_USE_LLM:-0}" == 1 ]]; then
     agent::load "cold/coldiest"
-    printf '> %s\n\n' "$$(prompt::ask "One sentence: what is $$(basename "$$(dirname "$$dir")")")" \
-      | cat - "$$out" > "$$out.tmp" && mv "$$out.tmp" "$$out"
+    DESC="$(prompt::ask "One sentence: what is $(basename "$DIR")")"
+    printf '> %s\n\n' "$DESC" >> "$OUT"
   fi
 
-  echo "doc::readme: $out"
+  # Synopsis: every public verb in lib/
+  printf '## Synopsis\n\n```bash\n' >> "$OUT"
+  grep -rhoE '^[a-z][a-z0-9_]*::[a-z][a-z0-9_]*$' "$DIR/lib" 2>/dev/null \
+    | sed 's/()//' | sort -u >> "$OUT" || true
+  printf '```\n\n' >> "$OUT"
+
+  # Configuration table from the root config
+  printf '## Configuration\n\n| Variable | Value |\n|---|---|\n' >> "$OUT"
+  grep -E '^[A-Z][A-Z0-9_]*=' "$DIR/config" 2>/dev/null \
+    | sed 's/^\([A-Z0-9_]*\)=\(.*\)$/| `\1` | `\2` |/' >> "$OUT" || true
+  printf '\n' >> "$OUT"
+
+  # Agents table: path + first prompt line + temperature
+  printf '## Agents\n\n| Agent | Prompt | Temp |\n|---|---|---|\n' >> "$OUT"
+  local NAME PROMPT_LINE TEMP
+  while IFS= read -r NAME; do
+    PROMPT_LINE="$(head -1 "$DIR/agents/$NAME/prompt" 2>/dev/null || true)"
+    TEMP="$(grep -h '^AGENT_TEMPERATURE=' "$DIR/agents/$NAME/config" 2>/dev/null | head -1 | cut -d= -f2 || true)"
+    printf '| %s | %s | %s |\n' "$NAME" "${PROMPT_LINE:--}" "${TEMP:--}" >> "$OUT"
+  done < <(agent::list "$DIR/agents")
+  printf '\n' >> "$OUT"
+
+  echo "doc::readme: $OUT"
 }

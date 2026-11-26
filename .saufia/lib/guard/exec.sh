@@ -17,9 +17,9 @@ guard::exec() {
   command -v "$lang" >/dev/null 2>&1 || {
     echo "guard::exec: no '$lang'" >&2; return 127; }
 
-  local tmp; tmp="$$(mktemp "$$SANDBOX_DIR/run.XXXXXX")"
-  printf '%s\n' "$$body" > "$$tmp"
-  timeout "$$TIMEOUT" "$$lang" "$$tmp" || rc=$$?
+  local tmp; tmp="$(mktemp "$SANDBOX_DIR/run.XXXXXX")"
+  printf '%s\n' "$body" > "$tmp"
+  timeout "$TIMEOUT" "$lang" "$tmp" || rc=$?
   rm -f "$tmp"
   (( rc == 124 || rc == 137 )) && echo "guard::exec: TIMEOUT ${TIMEOUT}s" >&2
   return "$rc"

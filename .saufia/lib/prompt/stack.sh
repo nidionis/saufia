@@ -4,11 +4,11 @@ prompt::stack() {
   local ctx=""
   # Match both "prompt" (exact) and "*.prompt" (glob)
   if [[ -f "$dir/prompt" ]]; then
-    ctx="$$(cat "$$dir/prompt")"
+    ctx="$(cat "$dir/prompt")"
   fi
   local f
   for f in "$dir"/*.prompt; do
-    [[ -f "$$f" ]] && ctx+=$$'\n'"$$(cat "$$f")"
+    [[ -f "$f" ]] && ctx+=$'\n'"$(cat "$f")"
   done
   agent::ask "$ctx
 $q"
