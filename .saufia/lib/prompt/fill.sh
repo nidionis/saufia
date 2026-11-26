@@ -1,23 +1,26 @@
-# prompt::fill <template-file-or-string> [input]
-# Replaces {VAR} with the value of $VAR (any scope), {I} with input.
-# Unknown placeholder -> removed. Guarded against self-expansion loops.
 prompt::fill() {
-  local t input="${2:-}"
-  if [[ -f "$1" ]]; then t="$(cat "$1")"; else t="$1"; fi
-  t="${t//\{I\}/$input}"
-  local n guard=0
-  while [[ "$t" =~ \{([A-Z][A-Z0-9_]*)\} ]] && (( guard++ < 64 )); do
-    n="${BASH_REMATCH[1]}"
-    t="${t//"${BASH_REMATCH[0]}"/${!n:-}}"
+  local TXT INPUT="${2:-}" KEY GUARD=0
+  if [[ -f "$1" ]]; then TXT="$(cat "$1")"; else TXT="$1"; fi
+  TXT="${TXT//\{I\}/$INPUT}"
+  TXT="${TXT//\{FORBIDDEN\}/$(prompt::forbid)}"
+  while [[ "$TXT" =~ \{([A-Z][A-Z0-9_]*)\} ]] && (( GUARD++ < 64 )); do
+    KEY="${BASH_REMATCH[1]}"
+    TXT="${TXT//"${BASH_REMATCH[0]}"/${!KEY:-}}"
   done
-  printf '%s\n' "$t"
+  printf '%s\n' "$TXT"
 }
 
-# prompt::forbid — renders FORBIDDEN array as "No x. No y."
 prompt::forbid() {
-  local item line=""
-  for item in "${FORBIDDEN[@]:-}"; do
-    line+="No ${item}. "
+  local ITEM OUT=""
+  for ITEM in "${FORBIDDEN[@]:-}"; do OUT+="No ${ITEM}. "; done
+  printf '%s\n' "${OUT% }"
+}
+
+# prompt::join <array-name> [numbered|flat]
+prompt::join() {
+  local -n ARR="$1"; local MODE="${2:-numbered}" ITEM I=1
+  for ITEM in "${ARR[@]:-}"; do
+    [[ "$MODE" == numbered ]] && printf '%d. %s\n' "$I" "$ITEM" || printf '%s\n' "$ITEM"
+    (( I++ ))
   done
-  printf '%s\n' "${line% }"
 }

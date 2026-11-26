@@ -1,24 +1,21 @@
-# saufia bootstrap — self-locating, deterministic sourcing
-saufia::find_ctx() {
-  local d="${1:-$PWD}"
-  while [[ "$d" != "/" ]]; do
-    [[ -d "$d/.saufia" ]] && { echo "$d/.saufia"; return 0; }
-    d="$(dirname "$d")"
+# saufia bootstrap — self-locating, deterministic, no baked paths.
+saufia::locate() {
+  local DIR="${1:-$PWD}"
+  while [[ "$DIR" != "/" ]]; do
+    [[ -d "$DIR/.saufia" ]] && { DOT_ROOT="$DIR"; CONTEXT="$DIR/.saufia"; return 0; }
+    DIR="$(dirname "$DIR")"
   done
-  echo "$PWD/.saufia"
+  DOT_ROOT="$PWD"; CONTEXT="$PWD/.saufia"
 }
 
-CONTEXT="${CONTEXT:-$(saufia::find_ctx)}"
-export CONTEXT
+[[ -n "${CONTEXT:-}" ]] || saufia::locate "${1:-$PWD}"
+DOT_ROOT="${DOT_ROOT:-$(dirname "$CONTEXT")}"
+export DOT_ROOT CONTEXT
+export SAUFIA_CTX="$CONTEXT"          # legacy alias — eliza untouched
 
-# Source libs in deterministic order (alphabetical via glob is fine here
-# because no lib depends on another lib's function at source-time)
-for _f in "$CONTEXT"/lib/*/*.sh; do
-  [[ -f "$_f" ]] && source "$_f"
+for FILE in "$CONTEXT"/lib/*/*.sh; do
+  [[ -f "$FILE" ]] && source "$FILE"
 done
 
-# Load root config (global vars: MODEL, OLLAMA_URL, aliases...)
 source "$CONTEXT/config"
-
-# Load agent (calls scope::load internally, walks root->agent)
 agent::load "${SAUFIA_AGENT:-default}"

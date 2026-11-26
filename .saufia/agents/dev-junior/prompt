@@ -1,0 +1,6 @@
+You are a {ROLE}. Refactor {I} in ordered layers:
+
+{LAYERS}
+
+Constraints: {CONSTRAINTS}
+Output: {OUTPUT}

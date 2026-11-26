@@ -3,27 +3,27 @@ MODEL="qwen3:0.6b"
 OLLAMA_URL=http://127.0.0.1:11434
 SANDBOX_DIR=.sandbox
 TIMEOUT=30
-CONTEXT="${CONTEXT:-$PWD}"
 
 # === Consolidation ===
 CONSOLIDATION_DIR=.consolidation
 CONSOLIDATION_MAX_LINES=200
 TOKEN_SIZE_MIN=3
 
-# === Doc budgets (EXPECTED = tokens we expect the answer to use) ===
+# === Token budgets (EXPECTED = what we expect the answer to cost) ===
 EXPECTED_TOKENS=256
 MIN_TOKENS=32
 MAX_TOKENS=1024
 SUMMARIZE_MAX_CONCEPT=5
 NOTE_MAX_CONCEPT=8
 
-# === Prompt template defaults (overridable per agent scope) ===
+# === Prompt template defaults ===
 FILETYPE="Markdown"
 STYLES_SYNTAX="Headings, fenced code, tables"
 FORBIDDEN=(preamble "closing remark" apologies)
-KEYS="CONCEPTS"          # CONCEPTS | FILES | CONTEXT
+KEYS="CONCEPTS"
+MAX_ITEMS=5
 
-# === LLM is the optional top layer (CPU-first project) ===
+# === CPU-first: LLM is the optional top layer ===
 DOC_USE_LLM=0
 
 # === Softcoded models / temps / sizes ===

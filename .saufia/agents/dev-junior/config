@@ -1,0 +1,28 @@
+AGENT_MODEL="$SMALL_MODEL"
+AGENT_TEMPERATURE=$COLD
+AGENT_NUM_PREDICT=$GATHA_SIZE
+
+# === Softcoded refactor contract ===
+ROLE="senior architect"
+LANGUAGE="bash"
+PRESERVE_BEHAVIOR=1
+KEEP_PUBLIC_API=1
+IDIOMS_ONLY=1
+MAX_CHANGES=12
+
+LAYERS=(
+  "Purify: remove dead code, unreachable paths, unused params"
+  "Rename: identifiers reflect caller intent, not internals"
+  "Factorize: extract repeated structure into named units"
+  "Lift abstraction: replace implementation details with domain concepts"
+  "SOLID: one reason to change per unit"
+)
+
+CONSTRAINTS=(
+  "preserve behavior"
+  "keep public API"
+  "{LANGUAGE} idioms only"
+  "max {MAX_CHANGES} changes"
+)
+
+OUTPUT="diff + one-line justification per change"
