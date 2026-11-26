@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+source "${SAUFIA_CTX:?}/lib/init.sh"
+case "${1:-}" in
+  clean) digest::clean "${2:-.}" ;;
+  *)     digest::run "${1:-.}" ;;
+esac

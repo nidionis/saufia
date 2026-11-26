@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source "${SAUFIA_CTX:?}/lib/init.sh"
+source "$SAUFIA_CTX/lib/thinkers/coder/script.sh"
+coder::run "$*"

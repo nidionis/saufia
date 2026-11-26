@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+source "${SAUFIA_CTX:?}/lib/init.sh"
+case "${1:-list}" in
+  list) for d in "$SAUFIA_CTX"/agents/*/; do
+          [[ -d "$d" ]] || continue
+          printf '  @%-14s %s\n' "$(basename "$d")" \
+            "$(prompt::resolve "$d" 2>/dev/null | head -1 || echo '(inherits)')"
+        done ;;
+  show) shift; agent::load "${1:-default}"
+        echo "model=$AGENT_MODEL temp=$AGENT_TEMPERATURE"
+        echo "system: $AGENT_SYSTEM" ;;
+  *) echo "usage: saufia agent <list|show>" >&2 ;;
+esac

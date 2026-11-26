@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export SAUFIA_CTX="${SAUFIA_CTX:-$_here/../.saufia}"
+[[ "${1:-}" == @* ]] && { export SAUFIA_AGENT="${1#@}"; shift; }
+cmd="${1:-help}"; shift || true
+sub="$_here/saufia-$cmd"
+[[ -x "$sub" ]] || { echo "saufia: no '$cmd'" >&2; exit 1; }
+exec "$sub" "$@"

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+source "${SAUFIA_CTX:?}/lib/init.sh"
+[[ $# -eq 0 ]] && { echo "usage: saufia make <name> [description]" >&2; exit 1; }
+agent::make "$@"

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source "${SAUFIA_CTX:?}/lib/init.sh"
+agent::ask "$*"
