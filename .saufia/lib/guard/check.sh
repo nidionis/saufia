@@ -1,5 +1,5 @@
 guard::check() {
-  local code="$1" rx="$SAUFIA_CTX/tools/regexes"
+  local code="$1" rx="$CONTEXT/tools/regexes"
   grep -qiE -f "$rx/whitelist.reg" <<< "$code" && return 0
   grep -qiE -f "$rx/blacklist.reg" <<< "$code" && {
     echo "guard: DENIED" >&2; return 1; }

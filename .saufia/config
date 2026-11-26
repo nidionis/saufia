@@ -1,28 +1,39 @@
-# === Global defaults ===
+# === Runtime ===
 MODEL="qwen3:0.6b"
 OLLAMA_URL=http://127.0.0.1:11434
 SANDBOX_DIR=.sandbox
 TIMEOUT=30
+CONTEXT="${CONTEXT:-$PWD}"
 
-# === Consolidation (replaces DIGEST_DIR) ===
+# === Consolidation ===
 CONSOLIDATION_DIR=.consolidation
 CONSOLIDATION_MAX_LINES=200
 TOKEN_SIZE_MIN=3
 
-# === Softcoded model aliases ===
+# === Doc budgets (EXPECTED = tokens we expect the answer to use) ===
+EXPECTED_TOKENS=256
+MIN_TOKENS=32
+MAX_TOKENS=1024
+SUMMARIZE_MAX_CONCEPT=5
+NOTE_MAX_CONCEPT=8
+
+# === Prompt template defaults (overridable per agent scope) ===
+FILETYPE="Markdown"
+STYLES_SYNTAX="Headings, fenced code, tables"
+FORBIDDEN=(preamble "closing remark" apologies)
+KEYS="CONCEPTS"          # CONCEPTS | FILES | CONTEXT
+
+# === LLM is the optional top layer (CPU-first project) ===
+DOC_USE_LLM=0
+
+# === Softcoded models / temps / sizes ===
 SMALL_MODEL="qwen2.5-coder:0.5b"
 MEDIUM_MODEL="qwen3-coder:1.5b"
-
-# === Softcoded temperature aliases ===
 FROZEN=0.0
 FRESH=0.25
 COLD=0.1
-
-# === Softcoded size aliases ===
 HAIKU_SIZE=64
 GATHA_SIZE=512
 SONNET=128
-
-# === Sampling aliases ===
 UNIQ=1
 FROZEN_SEED=42

@@ -2,7 +2,7 @@
 # Uses coldiest to generate prompt + config for a new agent.
 agent::make() {
   local name="$1" desc="${2:-$name}"
-  local dir="$SAUFIA_CTX/agents/$name"
+  local dir="$CONTEXT/agents/$name"
   [[ -n "$name" ]] || { echo "agent::make: usage: agent::make <name> [desc]" >&2; return 1; }
   mkdir -p "$dir"
 

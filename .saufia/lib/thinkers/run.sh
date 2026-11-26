@@ -2,10 +2,10 @@
 thinker::run() {
   local question="$1" start; start="$(cd "${2:-.}" && pwd)"
   local tid; tid="$(date +%s%N | tail -c 14)"
-  local state="$SAUFIA_CTX/.state/$tid"
+  local state="$CONTEXT/.state/$tid"
   mkdir -p "$state"
   echo "$question" > "$state/question"
-  ln -sfn "$state" "$SAUFIA_CTX/.state/last"
+  ln -sfn "$state" "$CONTEXT/.state/last"
 
   local current="$start" ctx=""
 

@@ -1,0 +1,5 @@
+# README is built by bash functions (lib/doc/readme.sh).
+# LLM only decorates descriptions when DOC_USE_LLM=1.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$HAIKU_SIZE
+DOC_USE_LLM=0

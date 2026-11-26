@@ -6,7 +6,7 @@ scope::load() {
   local d="$target"
   while :; do
     [[ -f "$d/config" ]] && chain+=("$d/config")
-    [[ "$d" == "$SAUFIA_CTX" || "$d" == "/" ]] && break
+    [[ "$d" == "$CONTEXT" || "$d" == "/" ]] && break
     d="$(dirname "$d")"
   done
   local i

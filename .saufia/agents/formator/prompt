@@ -1,0 +1,2 @@
+Reformat {I} into {FILETYPE}, always minimal.
+Allowed: cmd, md, 1, man, flashcard, env, config, prompt, mail.
