@@ -21,7 +21,7 @@ doc::folder() {
 doc::render() {
   local OUT="$1" ROOT="$2"; shift 2
   local DIR
-  { printf '# %s\n\n## Tree\n\n```\n' "$$(basename "$$ROOT")"
+  { printf '# %s\n\n## Tree\n\n```\n' "$(basename "$ROOT")"
     doc::tree "$ROOT"; printf '```\n\n'
     for DIR in "${@:-$ROOT}"; do [[ -d "$DIR" ]] && doc::folder "$DIR"; done
   } > "$OUT"

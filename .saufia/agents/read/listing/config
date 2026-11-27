@@ -1,2 +1,0 @@
-AGENT_NUM_PREDICT=$SONNET
-KEYTOKENS=("list" "enumerate" "files")

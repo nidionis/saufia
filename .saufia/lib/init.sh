@@ -8,7 +8,8 @@ saufia::locate() {
   DOT_ROOT="$PWD"; CONTEXT="$PWD/.saufia"
 }
 [[ -n "${CONTEXT:-}" ]] || saufia::locate "${1:-$PWD}"
-DOT_ROOT="${DOT_ROOT:-$(dirname "$CONTEXT")}"
+CONTEXT="$(cd "$CONTEXT" 2>/dev/null && pwd -P || printf '%s' "$CONTEXT")"
+DOT_ROOT="$(dirname "$CONTEXT")"
 export DOT_ROOT CONTEXT SAUFIA_CTX="$CONTEXT"
 export _SAUFIA_INIT_DONE=1
 while IFS= read -r -d '' FILE; do

@@ -1,0 +1,4 @@
+# @guard — manage the guard rule files. Deterministic, no LLM.
+AGENT_NO_AI=1
+GUARD_RX_DIR="$CONTEXT/tools/regexes"
+KEYTOKENS=("guard" "rule" "allow" "deny" "whitelist" "blacklist" "path")

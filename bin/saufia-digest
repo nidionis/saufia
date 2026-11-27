@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
-source "${SAUFIA_CTX:?}/lib/init.sh"
-case "${1:-}" in
-  clean) digest::clean "${2:-.}" ;;
-  *)     digest::run "${1:-.}" ;;
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+case "${1:-status}" in
+  start)  shift; digest::start "${1:-}" ;;
+  stop)   digest::stop ;;
+  status) digest::status ;;
+  run)    shift; consolidation::run "${1:-.}" ;;
+  clean)  shift; consolidation::clean "${1:-.}" ;;
+  merge)  digest::merge ;;
+  *)      echo "usage: saufia digest <start|stop|status|run|clean|merge>" >&2 ;;
 esac

@@ -1,0 +1,5 @@
+# tool — deterministic utilities. Edit + exec through their own scripts.
+AGENT_CAN_EDIT=1
+AGENT_CAN_EXEC=1
+AGENT_SCRIPT_ONLY=1
+AGENT_ROOT="${AGENT_ROOT:-$DOT_ROOT}"

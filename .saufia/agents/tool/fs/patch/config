@@ -1,0 +1,12 @@
+# @patch — bump the DEPLOY version line. No LLM.
+AGENT_NO_AI=1
+KEYTOKENS=("patch" "version" "bump" "deploy" "release")
+
+PATCH_FILE="${DOT_ROOT:-.}/saufia.txt"
+PATCH_PATTERN='^# DEPLOY . '
+PATCH_SEP=' | '
+PATCH_DATE_FMT='%Y-%m-%dT%H:%M:%S%z'
+PATCH_MSG_BUMP="patch: {OLD} -> {NEW}"
+PATCH_MSG_NOTFOUND="patch: no DEPLOY line in {FILE}"
+PATCH_MSG_SAME="patch: already current"
+PATCH_MSG_NOFILE="patch: no '{FILE}'"

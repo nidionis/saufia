@@ -1,0 +1,11 @@
+# Factory: generates new agents from templates + parameters.
+# Deterministic core (scripts/run.sh). LLM optional for prompt polish.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$GATHA_SIZE
+FACTORY_ROOT="$CONTEXT/agents"
+FACTORY_TEMPLATE="$CONTEXT/templates"
+FACTORY_FAMILIES=("read" "exec" "dev" "chat" "tool" "doc")
+FACTORY_DEFAULT_FAMILY="tool"
+FACTORY_TYPES=("deterministic" "llm" "hybrid")
+FACTORY_DEFAULT_TYPE="deterministic"
+KEYTOKENS=("factory" "create" "new" "generate" "scaffold" "agent")

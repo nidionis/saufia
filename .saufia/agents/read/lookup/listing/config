@@ -1,0 +1,3 @@
+AGENT_MODEL="$DUMMY_MODEL"
+AGENT_NUM_PREDICT=$DUMMY_SIZE
+KEYTOKENS=("list" "enumerate" "files")

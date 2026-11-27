@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# saufia-git — git workflow. Usage: saufia git <sub> [args...]
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "tool/git"
+git::dispatch "$@"

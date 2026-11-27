@@ -1,4 +1,5 @@
 # Tool agent: git workflow. Personality: a careful SCM operator.
+AGENT_MODEL="$DUMMY_MODEL"
 AGENT_TEMPERATURE=$FROZEN
 AGENT_NUM_PREDICT=$HAIKU_SIZE
 GIT_REMOTE="origin"

@@ -1,0 +1,4 @@
+# fs — filesystem tools. Project-scoped editing; scripts still go through guard.
+AGENT_CAN_EDIT=1
+AGENT_CAN_EXEC=1
+AGENT_ROOT="$DOT_ROOT"

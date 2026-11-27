@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# saufia-mindshark — follow/resume a workflow, persisted in .digest.
+# Usage: saufia mindshark <init|step|next|show|digest> <name> [args...]
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "tool/mindshark"
+mindshark::dispatch "$@"

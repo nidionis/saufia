@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
-source "${SAUFIA_CTX:?}/lib/init.sh"
-guard::exec "$*"
+# saufia-exec — guarded code execution. Grants exec via the exec action.
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "exec" || exit 1
+if [[ $# -eq 0 && ! -t 0 ]]; then guard::exec "$(cat)"
+else guard::exec "$*"; fi

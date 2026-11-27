@@ -1,7 +1,7 @@
-# guard::exec <code> — extract fence, validate, sandbox-execute
+# guard::exec <code> — extract fence, validate, sandbox-execute in AGENT_ROOT.
 guard::exec() {
-  local code="$1" lang body rc=0
-  guard::load || return $?
+  local code="$1" lang body rc=0 root
+  guard::load exec || return $?
 
   lang="$(grep -oP '^```\K\w+' <<< "$code" | head -1)"
   lang="${lang:-bash}"
@@ -17,9 +17,11 @@ guard::exec() {
   command -v "$lang" >/dev/null 2>&1 || {
     echo "guard::exec: no '$lang'" >&2; return 127; }
 
+  root="$(guard::root)"
+  mkdir -p "$root"
   local tmp; tmp="$(mktemp "$SANDBOX_DIR/run.XXXXXX")"
   printf '%s\n' "$body" > "$tmp"
-  timeout "$TIMEOUT" "$lang" "$tmp" || rc=$?
+  ( cd "$root" && timeout "$TIMEOUT" "$lang" "$tmp" ) || rc=$?
   rm -f "$tmp"
   (( rc == 124 || rc == 137 )) && echo "guard::exec: TIMEOUT ${TIMEOUT}s" >&2
   return "$rc"

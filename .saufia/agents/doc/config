@@ -1,4 +1,8 @@
 # Doc agent: renders concise readmes from the folder tree + .digest + VARNAMEs.
+AGENT_CAN_EDIT=1
+AGENT_CAN_EXEC=0
+DOC_OUT_DIR="doc"
+AGENT_ROOT="$DOT_ROOT/$DOC_OUT_DIR"
 AGENT_TEMPERATURE=$FROZEN
 AGENT_NUM_PREDICT=$GATHA_SIZE
 DOC_OUT_DIR="doc"

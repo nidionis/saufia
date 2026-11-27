@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+case "${1:-run}" in
+  clean) consolidation::clean "${2:-.}" ;;
+  *)     consolidation::run "${1:-.}" ;;
+esac

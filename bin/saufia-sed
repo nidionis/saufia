@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "tool/fs/sed"
+if [[ ! -t 0 && $# -eq 0 ]]; then agent::ask "$(cat)"
+else agent::ask "$*"; fi

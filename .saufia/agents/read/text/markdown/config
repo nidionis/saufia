@@ -1,0 +1,5 @@
+# Pure bash markdown → pretty terminal output. No LLM. No glow.
+# Handles: headings, bold, italic, code, lists, tables, links, hr.
+# ANSI colors auto-detected (tty = colored, pipe = plain).
+AGENT_NO_AI=1
+KEYTOKENS=("markdown" "md" "pretty" "format" "render" "display")

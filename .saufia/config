@@ -1,8 +1,21 @@
 # === Runtime ===
-MODEL="qwen3:0.6b"
 OLLAMA_URL=http://127.0.0.1:11434
-SANDBOX_DIR=.sandbox
 TIMEOUT=30
+
+# === Layout ===
+LAB_DIR="$CONTEXT/.lab"
+THOUGHT_DIR="$CONTEXT/.state/thought"
+SANDBOX_DIR="$CONTEXT/.state/sandbox"
+
+# === Model tiers (right-size: dumbest by default) ===
+DUMMY_MODEL="smollm2:135m"       # no logic, quick summary
+BASIC_MODEL="qwen3:0.6b"         # digesting
+MEDIUM_MODEL="qwen3-coder:1.5b"  # code
+RIGHT_SIZE_MODEL="${RIGHT_SIZE_MODEL:-$DUMMY_MODEL}"
+DUMMY_SIZE=64
+BASIC_SIZE=256
+SMALL_MODEL="$BASIC_MODEL"       # compatibility alias
+MODEL="${MODEL:-$RIGHT_SIZE_MODEL}"
 
 # === Consolidation ===
 CONSOLIDATION_DIR=.digest
@@ -26,9 +39,7 @@ MAX_ITEMS=5
 # === CPU-first: LLM is the optional top layer ===
 DOC_USE_LLM=0
 
-# === Softcoded models / temps / sizes ===
-SMALL_MODEL="qwen2.5-coder:0.5b"
-MEDIUM_MODEL="qwen3-coder:1.5b"
+# === Softcoded temps / sizes ===
 FROZEN=0.0
 FRESH=0.25
 COLD=0.1
@@ -52,3 +63,8 @@ GLOW_PKG="glow"
 # === Ollama fit ===
 WORST_PREFERED=1          # 1=allow smaller fallback, 0=strict exact match
 OLLAMA_FIT=1              # 1=auto-fit on load, 0=skip
+
+# === Digest daemon ===
+DIGEST_INTERVAL=60
+DIGEST_BRANCH=digest
+

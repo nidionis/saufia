@@ -1,0 +1,5 @@
+# @amnesia — no memory, no thoughts. The one agent denied THOUGHT_DIR.
+AGENT_THOUGHT=0
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$DUMMY_SIZE
+KEYTOKENS=("amnesia" "forget" "memory" "stateless")

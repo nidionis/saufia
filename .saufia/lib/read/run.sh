@@ -10,45 +10,49 @@ read::targets() {
   fi
 }
 
-# read::run [file...] — glow if available/installable, else coldiest
+# read::render <file> — try markdown script, then glow, then cat.
+read::render() {
+  local FILE="$1"
+  local SCRIPT="$CONTEXT/agents/read/text/markdown/scripts/run.sh"
+  if [[ -x "$SCRIPT" ]]; then
+    "$SCRIPT" < "$FILE"
+    return $?
+  fi
+  # Fallback: glow
+  local BIN="${GLOW_PAGER:-glow}"
+  if command -v "$BIN" >/dev/null 2>&1; then
+    "$BIN" -p --style "${GLOW_STYLE:-notty}" --width "${GLOW_WIDTH:-92}" "$FILE"
+    return $?
+  fi
+  # Last resort: raw cat
+  cat "$FILE"
+}
+
+# read::run [file...]
 read::run() {
   local -a TARGETS=()
   mapfile -t TARGETS < <(read::targets "$@")
-
   if [[ ${#TARGETS[@]} -eq 0 ]]; then
     echo "read::run: no markdown found (tried $MD_DIR/*.md)" >&2
     return 1
   fi
-
-  agent::load "read"
-  local BIN="${GLOW_PAGER:-glow}"
-
-  if ! command -v "$BIN" >/dev/null 2>&1; then
-    if install::need "$BIN" "${GLOW_PKG:-glow}" 2>/dev/null; then
-      :
-    else
-      echo "read::run: '$BIN' unavailable — falling back to coldiest" >&2
-      local F
-      for F in "${TARGETS[@]}"; do
-        printf '\n\033[1m== %s ==\033[0m\n' "$F"
-        prompt::ask "Render this markdown as readable plain text:
-$(cat "$F")"
-      done
-      return 0
-    fi
-  fi
-
-  "$BIN" -p --style "${GLOW_STYLE:-notty}" --width "${GLOW_WIDTH:-92}" "${TARGETS[@]}"
+  local F
+  for F in "${TARGETS[@]}"; do
+    printf '\n'
+    read::render "$F"
+  done
 }
 
-# read::pipe — render stdin (for: saufia-read < README.md)
+# read::pipe — render stdin
 read::pipe() {
-  agent::load "read"
-  local BIN="${GLOW_PAGER:-glow}" TMP
-  if command -v "$BIN" >/dev/null 2>&1 || install::need "$BIN" "${GLOW_PKG:-glow}" 2>/dev/null; then
+  local SCRIPT="$CONTEXT/agents/read/text/markdown/scripts/run.sh"
+  if [[ -x "$SCRIPT" ]]; then
+    "$SCRIPT"
+  elif command -v "${GLOW_PAGER:-glow}" >/dev/null 2>&1; then
+    local TMP
     TMP="$(mktemp "${TMPDIR:-/tmp}/saufia-read.XXXXXX.md")"
     cat > "$TMP"
-    "$BIN" -p --style "${GLOW_STYLE:-notty}" --width "${GLOW_WIDTH:-92}" "$TMP"
+    "${GLOW_PAGER:-glow}" -p --style "${GLOW_STYLE:-notty}" --width "${GLOW_WIDTH:-92}" "$TMP"
     rm -f "$TMP"
   else
     cat

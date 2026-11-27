@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# saufia-flow — decompose a prompt into an agent pipeline.
+# Usage: saufia flow "task" [dir]   |   saufia flow --plan "task"
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "tool/flow"
+if [[ "${1:-}" == --plan ]]; then shift; flow::build_plan "$*"
+else flow::decompose "$*" "${2:-.}"; fi

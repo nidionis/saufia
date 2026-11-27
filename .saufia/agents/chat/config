@@ -1,0 +1,4 @@
+# chat — conversational agents. No filesystem mutation, no code execution.
+AGENT_CAN_EDIT=0
+AGENT_CAN_EXEC=0
+AGENT_THOUGHT=1

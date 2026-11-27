@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
-source "${SAUFIA_CTX:?}/lib/init.sh"
+# [list|show <name>] — list agents, or dump one agent.
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
 case "${1:-list}" in
-  list) for d in "$SAUFIA_CTX"/agents/*/; do
-          [[ -d "$d" ]] || continue
-          printf '  @%-14s %s\n' "$(basename "$d")" \
-            "$(prompt::resolve "$d" 2>/dev/null | head -1 || echo '(inherits)')"
-        done ;;
-  show) shift; agent::load "${1:-default}"
-        echo "model=$AGENT_MODEL temp=$AGENT_TEMPERATURE"
-        echo "system: $AGENT_SYSTEM" ;;
-  *) echo "usage: saufia agent <list|show>" >&2 ;;
+  list)
+    while IFS= read -r NAME; do
+      DIR="$(agent::resolve_dir "$NAME")" || continue
+      DESC="$(head -1 "$DIR/prompt" 2>/dev/null || echo '(inherits)')"
+      printf '  @%-26s %s\n' "$NAME" "$DESC"
+    done < <(agent::list)
+    ;;
+  show)
+    shift
+    agent::load "${1:-default}" || exit 1
+    printf 'name=%s action=%s model=%s\n' "$AGENT_NAME" "$AGENT_ACTION" "$AGENT_MODEL"
+    printf 'caps: edit=%s exec=%s script_only=%s root=%s\n' \
+      "$AGENT_CAN_EDIT" "$AGENT_CAN_EXEC" "${AGENT_SCRIPT_ONLY:-0}" "${AGENT_ROOT:--}"
+    echo "system: $AGENT_SYSTEM"
+    ;;
+  *)
+    echo "usage: saufia agent <list|show> [name]" >&2
+    ;;
 esac

@@ -1,6 +1,9 @@
 # read renders markdown with glow (no LLM). coldiest is the fallback
 # used only when glow cannot be installed.
+AGENT_CAN_EDIT=0
+AGENT_CAN_EXEC=0
+AGENT_MODEL="$BASIC_MODEL"
 AGENT_TEMPERATURE=$FRESH
-AGENT_NUM_PREDICT=$GATHA_SIZE
+AGENT_NUM_PREDICT=$BASIC_SIZE
 GLOW_PAGER="glow"
 GLOW_STYLE="notty"

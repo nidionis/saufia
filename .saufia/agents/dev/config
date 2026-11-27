@@ -1,0 +1,4 @@
+# dev — implementation agents. Edit + exec, lab-scoped by default.
+AGENT_CAN_EDIT=1
+AGENT_CAN_EXEC=1
+AGENT_ROOT="${AGENT_ROOT:-$LAB_DIR}"

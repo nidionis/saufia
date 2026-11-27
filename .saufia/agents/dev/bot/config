@@ -1,0 +1,44 @@
+# @bot — apropos-driven, read-only command finder. No LLM.
+AGENT_NO_AI=1
+AGENT_CAN_EDIT=0
+AGENT_CAN_EXEC=1
+AGENT_ROOT="$DOT_ROOT"
+AGENT_NUM_PREDICT=$DUMMY_SIZE
+KEYTOKENS=("bot" "command" "apropos" "find" "read" "run")
+
+BOT_READONLY=1
+BOT_MAX_CANDIDATES=60
+BOT_ALLOW=(
+  ls cat head tail grep find wc stat file which type man apropos whatis
+  pwd date df du free uname id whoami ps strings sort uniq cut tr nl od xxd
+  basename dirname realpath readlink column tree rg
+)
+declare -A BOT_HINTS=(
+  [list]=ls [files]=ls [file]=ls [directory]=ls [dir]=ls
+  [read]=cat [show]=cat [print]=cat
+  [search]=grep [find]=find [locate]=find
+  [disk]=df [space]=df [memory]=free [ram]=free
+  [process]=ps [processes]=ps [date]=date [time]=date
+  [who]=whoami [user]=whoami [kernel]=uname [system]=uname
+  [count]=wc [lines]=wc [size]=du [usage]=du
+)
+
+BOT_MSG_EMPTY="bot: empty input"
+BOT_MSG_NOCMD="bot: no command found for '{QUERY}'"
+BOT_MSG_PICK="bot: {QUERY} -> {CMD} — {DESC}"
+BOT_MSG_FALLBACK="bot: read-only denied; showing man {CMD}"
+
+# === Legacy deploy parser (scripts/deploy.sh) ===
+BOT_RE_BLOCK='^# === (.+) \(([0-9]+) bytes\) ===$'
+BOT_RE_HEREDOC_START='^cat > .* <<.EOF_'
+BOT_RE_HEREDOC_END='^EOF_'
+
+BOT_MSG_APPLIED="bot: {FILE} ({SIZE} bytes)"
+BOT_MSG_SUMMARY="bot: {COUNT} files applied"
+BOT_MSG_NOFILE="bot: no '{FILE}'"
+
+BOT_DEFAULT_ACTION="tool"
+declare -A BOT_VERBS=(
+  [read]="ask" [write]="exec" [chat]="ask"
+  [tool]="exec" [lib]="load"
+)

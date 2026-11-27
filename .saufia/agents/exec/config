@@ -1,0 +1,5 @@
+# exec — editing + execution. Lab-scoped by default; a leaf may widen
+# AGENT_ROOT to $DOT_ROOT when it is deliberately working on the project.
+AGENT_CAN_EDIT=1
+AGENT_CAN_EXEC=1
+AGENT_ROOT="${AGENT_ROOT:-$LAB_DIR}"

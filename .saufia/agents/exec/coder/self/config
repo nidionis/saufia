@@ -1,0 +1,3 @@
+# @coder/self — shows the coder contract. No LLM, no script.
+# Use @coder to actually code. Use @coder/context for context-aware.
+AGENT_NO_AI=1

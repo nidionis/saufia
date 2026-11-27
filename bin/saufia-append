@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# saufia-append — append output to a file with resize.
+# Usage: saufia append <file> [content] | echo x | saufia append <file>
+#        saufia append @agent <file> [prompt]
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "tool/fs/appender" || exit 1
+if [[ "${1:-}" == @* ]]; then
+  export SAUFIA_AGENT="${1#@}"; shift
+  append::agent "$SAUFIA_AGENT" "$@"
+else
+  append::run "$@"
+fi

@@ -1,2 +1,1 @@
-^(echo|printf|cat|head|tail|wc|grep|find|ls|which|type|man|strings)\s
-^(pwd|date)$
+^(echo|printf|cat|head|tail|wc|grep|find|ls|which|type|man|apropos|whatis|strings|pwd|date|df|du|free|uname|id|whoami|ps|stat|file|realpath|readlink|basename|dirname|sort|uniq|cut|tr|nl|od|xxd|column|tree|rg)([[:space:]]|$)

@@ -2,17 +2,24 @@
 _here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export CONTEXT="${CONTEXT:-${SAUFIA_CTX:-$_here/../.saufia}}"
 export SAUFIA_CTX="$CONTEXT"
-export PROG="$(basename "$0")"
-[[ "${1:-}" == @* ]] && { export SAUFIA_AGENT="${1#@}"; shift; }
-
+export PROG="$(basename "${BASH_SOURCE[0]}")"
+if [[ "${1:-}" == @* ]]; then
+  AGENT="${1#@}"; shift
+  if [[ $# -eq 0 && -t 0 ]]; then
+    source "$CONTEXT/lib/init.sh"; agent::show "$AGENT"; exit $?; fi
+  export SAUFIA_AGENT="$AGENT"
+  source "$CONTEXT/lib/init.sh"
+  agent::load "$AGENT" || { echo "saufia: no agent '$AGENT'" >&2; exit 1; }
+  [[ "${1:-}" == ask ]] && shift
+  if [[ $# -eq 0 && ! -t 0 ]]; then prompt::ask "$(cat)"; else prompt::ask "$*"; fi
+  exit $?
+fi
 CMD="${1:-help}"; shift || true
 SUB="$_here/saufia-$CMD"
 [[ -x "$SUB" ]] && exec "$SUB" "$@"
-
 source "$CONTEXT/lib/init.sh"
-if verb::exists "$CMD"; then
-  verb::run "$CMD" "$@"
-  exit $?
-fi
-echo "saufia: no command or verb '$CMD' (try: saufia help)" >&2
+if verb::exists "$CMD"; then verb::run "$CMD" "$@"; exit $?; fi
+if agent::resolve_dir "$CMD" >/dev/null 2>&1; then
+  agent::load "$CMD"; prompt::ask "$*"; exit $?; fi
+echo "saufia: unknown '$CMD' — try: saufia help" >&2
 exit 1

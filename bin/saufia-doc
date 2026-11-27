@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# saufia-doc — render concise readmes from tree + .digest + VARNAMEs.
+# Usage: saufia doc            (renders doc/{readme.md,eliza/readme,git/readme})
+#        saufia doc <out> <root> [dirs...]   (custom render)
+_here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+: "${CONTEXT:=${SAUFIA_CTX:-$_here/../.saufia}}"
+source "$CONTEXT/lib/init.sh"
+agent::load "doc"
+mkdir -p "$DOT_ROOT/$DOC_OUT_DIR/eliza" "$DOT_ROOT/$DOC_OUT_DIR/git"
+if [[ $# -eq 0 ]]; then doc::readme; else doc::render "$@"; fi

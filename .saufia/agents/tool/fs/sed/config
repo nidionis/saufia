@@ -1,0 +1,24 @@
+# @sed — deterministic sed editor with git PR review. No LLM.
+AGENT_NO_AI=1
+KEYTOKENS=("sed" "replace" "patch" "edit" "substitute" "transform")
+
+SED_BRANCH_PREFIX="sed"
+SED_STASH_MSG="sed-auto"
+SED_COMMIT_FMT="sed: {EXPR}"
+SED_DIFF_HEADER="--- diff ({BRANCH}) ---"
+SED_DIFF_FOOTER="--------------------------------"
+
+SED_PROMPT_MERGE="Merge into {BASE}? [y/N/d/e] "
+SED_PROMPT_DIFF="Merge now? [y/N] "
+SED_PROMPT_EDIT="Merge? [y/N] "
+SED_MSG_MERGED="sed: merged {BRANCH}"
+SED_MSG_KEPT="sed: kept branch {BRANCH} (git merge {BRANCH})"
+SED_MSG_NOCHANGE="sed: no change"
+SED_MSG_NOTGIT="sed: not a git repo"
+SED_MSG_NOFILE="sed: no '{FILE}'"
+SED_MSG_EMPTY="sed: empty expression"
+SED_MSG_SEDFAIL="sed: expression failed"
+
+SED_RE_YES='^y(es)?$'
+SED_RE_DIFF='^d(iff)?$'
+SED_RE_EDIT='^e(dit)?$'
