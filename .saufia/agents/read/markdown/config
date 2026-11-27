@@ -4,3 +4,4 @@ AGENT_NUM_PREDICT=$GATHA_SIZE
 FILETYPE="Markdown"
 STYLES_SYNTAX="Headings, fenced code, tables"
 FORBIDDEN=(preamble "closing remark")
+KEYTOKENS=("markdown" "md" "doc" "readme")

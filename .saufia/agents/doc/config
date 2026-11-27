@@ -1,0 +1,6 @@
+# Doc agent: renders concise readmes from the folder tree + .digest + VARNAMEs.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$GATHA_SIZE
+DOC_OUT_DIR="doc"
+DOC_TREE_DEPTH=3
+KEYTOKENS=("doc" "readme" "tree" "digest" "document")

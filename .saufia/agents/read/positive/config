@@ -1,1 +1,2 @@
 AGENT_TEMPERATURE=0.7
+KEYTOKENS=("works" "good" "correct" "right")

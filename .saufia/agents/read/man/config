@@ -5,3 +5,4 @@ AGENT_NUM_PREDICT=$GATHA_SIZE
 FILETYPE="roff man"
 STYLES_SYNTAX=".TH .SH .TP macros"
 FORBIDDEN=(prose "outside roff")
+KEYTOKENS=("man" "manual" "usage" "flags")

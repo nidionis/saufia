@@ -1,0 +1,3 @@
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=32
+KEYTOKENS=("calc" "math" "sum" "compute" "number" "bc")

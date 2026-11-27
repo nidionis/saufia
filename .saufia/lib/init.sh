@@ -1,8 +1,4 @@
-# saufia bootstrap — self-locating, deterministic, no baked paths.
-# Re-entry guard: lib/init.sh lives inside lib/, so the recursive walk
-# below would otherwise source it forever (fd exhaustion).
 [[ -n "${_SAUFIA_INIT_DONE:-}" ]] && return 0
-
 saufia::locate() {
   local DIR="${1:-$PWD}"
   while [[ "$DIR" != "/" ]]; do
@@ -11,27 +7,17 @@ saufia::locate() {
   done
   DOT_ROOT="$PWD"; CONTEXT="$PWD/.saufia"
 }
-
 [[ -n "${CONTEXT:-}" ]] || saufia::locate "${1:-$PWD}"
 DOT_ROOT="${DOT_ROOT:-$(dirname "$CONTEXT")}"
-export DOT_ROOT CONTEXT
-export SAUFIA_CTX="$CONTEXT"          # legacy alias — eliza untouched
+export DOT_ROOT CONTEXT SAUFIA_CTX="$CONTEXT"
 export _SAUFIA_INIT_DONE=1
-
-# Recursive (lib/*/*.sh and lib/*/*/*.sh) but never this file.
-# sort gives deterministic order; null-delimited handles spaces.
 while IFS= read -r -d '' FILE; do
   [[ "$FILE" == "$CONTEXT/lib/init.sh" ]] && continue
-  source "$FILE"
+  source "$FILE" 2>/dev/null || true
 done < <(find "$CONTEXT/lib" -type f -name '*.sh' -print0 2>/dev/null | sort -z)
-
-source "$CONTEXT/config"
-agent::load "${SAUFIA_AGENT:-default}"
-
-# Auto-fit: if the loaded model isn't installed, pick the best available.
-# Set WORST_PREFERED=0 in config to disable fallback.
+source "$CONTEXT/config" 2>/dev/null || true
+agent::load "${SAUFIA_AGENT:-default}" 2>/dev/null || true
 if [[ "${OLLAMA_FIT:-1}" == "1" ]] && declare -F ollama::fit_apply >/dev/null 2>&1; then
-  if ! ollama::available "${AGENT_MODEL:-$MODEL}" 2>/dev/null; then
-    ollama::fit_apply "${AGENT_MODEL:-$MODEL}" || true
-  fi
+  ollama::available "${AGENT_MODEL:-${MODEL:-}}" 2>/dev/null \
+    || ollama::fit_apply "${AGENT_MODEL:-${MODEL:-}}" 2>/dev/null || true
 fi

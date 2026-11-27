@@ -1,0 +1,6 @@
+# Appends agent output to a target file, then resizes.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$HAIKU_SIZE
+APPEND_MAX_BYTES=0
+APPEND_MODE="append"
+KEYTOKENS=("append" "write" "file" "output" "resize" "concat")

@@ -1,1 +1,2 @@
 AGENT_TEMPERATURE=0.2
+KEYTOKENS=("why" "origin" "reason" "because")

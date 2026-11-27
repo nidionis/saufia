@@ -1,5 +1,3 @@
-# scope::load [dir] — source every config from CTX root down to dir.
-# Deepest scope wins. THE config mechanism; nothing else loads vars.
 scope::load() {
   local target="${1:-$PWD}"
   local -a chain=()
@@ -11,6 +9,6 @@ scope::load() {
   done
   local i
   for (( i=${#chain[@]}-1; i>=0; i-- )); do
-    source "${chain[i]}"
+    source "${chain[i]}" 2>/dev/null || true
   done
 }

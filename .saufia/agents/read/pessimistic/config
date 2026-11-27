@@ -1,1 +1,2 @@
 AGENT_TEMPERATURE=0.4
+KEYTOKENS=("risk" "fail" "worst" "problem")

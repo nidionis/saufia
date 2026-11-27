@@ -1,0 +1,7 @@
+# Mindshark: follow a workflow. Persists the step trail in .digest so a flow
+# survives interruption and can be resumed. State = lines in $STATE.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$HAIKU_SIZE
+MINDSHARK_STATE="$CONTEXT/.state/mindshark"
+MINDSHARK_SEP="|"
+KEYTOKENS=("workflow" "mindshark" "track" "follow" "resume" "step")

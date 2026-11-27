@@ -1,0 +1,4 @@
+# Flow architect: decomposes prompts into agent pipelines.
+AGENT_TEMPERATURE=$COLD
+AGENT_NUM_PREDICT=$GATHA_SIZE
+KEYTOKENS=("decompose" "flow" "pipeline" "stack" "process" "signal" "orchestrate")

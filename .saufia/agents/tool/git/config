@@ -1,0 +1,8 @@
+# Tool agent: git workflow. Personality: a careful SCM operator.
+AGENT_TEMPERATURE=$FROZEN
+AGENT_NUM_PREDICT=$HAIKU_SIZE
+GIT_REMOTE="origin"
+GIT_LOG_FLAGS="--oneline --decorate --graph --all"
+GIT_EDITOR="${GIT_EDITOR:-vim}"
+GIT_SUBS=(add commit push workflow status log diff ignore)
+KEYTOKENS=("git" "commit" "push" "diff" "branch" "stage" "ignore")

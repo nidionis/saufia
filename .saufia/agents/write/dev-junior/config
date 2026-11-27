@@ -26,3 +26,4 @@ CONSTRAINTS=(
 )
 
 OUTPUT="diff + one-line justification per change"
+KEYTOKENS=("refactor" "clean" "rename" "factor")
